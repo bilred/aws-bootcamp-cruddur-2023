@@ -22,7 +22,7 @@ tasks:
 vscode:
   extensions:
     - 42Crunch.vscode-openapi
-
+    - cweijan.vscode-database-client2
 
 ports:
   - name: frontend
