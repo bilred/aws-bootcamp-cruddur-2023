@@ -66,3 +66,98 @@ export HONEYCOMB_SERVICE_NAME="Cruddur"
 gp env HONEYCOMB_API_KEY=""
 gp env HONEYCOMB_SERVICE_NAME="Cruddur"
 ```
+
+## X-Ray
+
+### Instrument AWS X-Ray for Flask
+
+
+```sh
+export AWS_REGION="ca-central-1"
+gp env AWS_REGION="ca-central-1"
+```
+
+Add to the `requirements.txt`
+
+```py
+aws-xray-sdk
+```
+
+Install pythonpendencies
+
+```sh
+pip install -r requirements.txt
+```
+
+Add to `app.py`
+
+```py
+from aws_xray_sdk.core import xray_recorder
+from aws_xray_sdk.ext.flask.middleware import XRayMiddleware
+
+xray_url = os.getenv("AWS_XRAY_URL")
+xray_recorder.configure(service='backend-flask', dynamic_naming=xray_url)
+XRayMiddleware(app, xray_recorder)
+```
+
+### Setup AWS X-Ray Resources
+
+Add `aws/json/xray.json`
+
+```json
+{
+  "SamplingRule": {
+      "RuleName": "Cruddur",
+      "ResourceARN": "*",
+      "Priority": 9000,
+      "FixedRate": 0.1,
+      "ReservoirSize": 5,
+      "ServiceName": "backend-flask",
+      "ServiceType": "*",
+      "Host": "*",
+      "HTTPMethod": "*",
+      "URLPath": "*",
+      "Version": 1
+  }
+}
+```
+
+```sh
+aws xray create-group \
+   --group-name "Cruddur" \
+   --filter-expression "service(\"backend-flask\")"
+```
+
+```sh
+aws xray create-sampling-rule --cli-input-json file://aws/json/xray.json
+```
+
+ [Install X-ray Daemon](https://docs.aws.amazon.com/xray/latest/devguide/xray-daemon.html)
+
+[Github aws-xray-daemon](https://github.com/aws/aws-xray-daemon)
+[X-Ray Docker Compose example](https://github.com/marjamis/xray/blob/master/docker-compose.yml)
+
+
+### Add Deamon Service to Docker Compose
+
+```yml
+  xray-daemon:
+    image: "amazon/aws-xray-daemon"
+    environment:
+      AWS_ACCESS_KEY_ID: "${AWS_ACCESS_KEY_ID}"
+      AWS_SECRET_ACCESS_KEY: "${AWS_SECRET_ACCESS_KEY}"
+      AWS_REGION: "${AWS_REGION}"
+    command:
+      - "xray -o -b xray-daemon:2000"
+    ports:
+      - 2000:2000/udp
+```
+
+We need to add these two env vars to our backend-flask in our `docker-compose.yml` file
+
+```yml
+      AWS_XRAY_URL: "*4567-${GITPOD_WORKSPACE_ID}.${GITPOD_WORKSPACE_CLUSTER_HOST}*"
+      AWS_XRAY_DAEMON_ADDRESS: "xray-daemon:2000"
+```
+
+
