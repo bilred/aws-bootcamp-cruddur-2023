@@ -1,86 +1,47 @@
-import './SigninPage.css';
+import './ProfileInfo.css';
+import {ReactComponent as ElipsesIcon} from './svg/elipses.svg';
 import React from "react";
-import {ReactComponent as Logo} from '../components/svg/logo.svg';
-import { Link } from "react-router-dom";
 
-// [TODO] Authenication
-import Cookies from 'js-cookie'
+// Authenication
+import { Amplify } from 'aws-amplify';
 
-export default function SigninPage() {
+export default function ProfileInfo(props) {
+  const [popped, setPopped] = React.useState(false);
 
-  const [email, setEmail] = React.useState('');
-  const [password, setPassword] = React.useState('');
-  const [errors, setErrors] = React.useState('');
+  const click_pop = (event) => {
+    setPopped(!popped)
+  }
 
-  const onsubmit = async (event) => {
-    event.preventDefault();
-    setErrors('')
-    console.log('onsubmit')
-    if (Cookies.get('user.email') === email && Cookies.get('user.password') === password){
-      Cookies.set('user.logged_in', true)
-      window.location.href = "/"
-    } else {
-      setErrors("Email and password is incorrect or account doesn't exist")
+  const signOut = async () => {
+    try {
+        await Amplify.signOut({ global: true });
+        window.location.href = "/"
+    } catch (error) {
+        console.log('error signing out: ', error);
     }
-    return false
   }
 
-  const email_onchange = (event) => {
-    setEmail(event.target.value);
-  }
-  const password_onchange = (event) => {
-    setPassword(event.target.value);
-  }
-
-  let el_errors;
-  if (errors){
-    el_errors = <div className='errors'>{errors}</div>;
+  const classes = () => {
+    let classes = ["profile-info-wrapper"];
+    if (popped == true){
+      classes.push('popped');
+    }
+    return classes.join(' ');
   }
 
   return (
-    <article className="signin-article">
-      <div className='signin-info'>
-        <Logo className='logo' />
+    <div className={classes()}>
+      <div className="profile-dialog">
+        <button onClick={signOut}>Sign Out</button> 
       </div>
-      <div className='signin-wrapper'>
-        <form 
-          className='signin_form'
-          onSubmit={onsubmit}
-        >
-          <h2>Sign into your Cruddur account</h2>
-          <div className='fields'>
-            <div className='field text_field username'>
-              <label>Email</label>
-              <input
-                type="text"
-                value={email}
-                onChange={email_onchange} 
-              />
-            </div>
-            <div className='field text_field password'>
-              <label>Password</label>
-              <input
-                type="password"
-                value={password}
-                onChange={password_onchange} 
-              />
-            </div>
-          </div>
-          {el_errors}
-          <div className='submit'>
-            <Link to="/forgot" className="forgot-link">Forgot Password?</Link>
-            <button type='submit'>Sign In</button>
-          </div>
-
-        </form>
-        <div className="dont-have-an-account">
-          <span>
-            Don't have an account?
-          </span>
-          <Link to="/signup">Sign up!</Link>
+      <div className="profile-info" onClick={click_pop}>
+        <div className="profile-avatar"></div>
+        <div className="profile-desc">
+          <div className="profile-display-name">{props.user.display_name || "My Name" }</div>
+          <div className="profile-username">@{props.user.handle || "handle"}</div>
         </div>
+        <ElipsesIcon className='icon' />
       </div>
-
-    </article>
-  );
+    </div>
+  )
 }
