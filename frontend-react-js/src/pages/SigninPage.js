@@ -1,47 +1,91 @@
-import './ProfileInfo.css';
-import {ReactComponent as ElipsesIcon} from './svg/elipses.svg';
+import './SigninPage.css';
 import React from "react";
+import {ReactComponent as Logo} from '../components/svg/logo.svg';
+import { Link } from "react-router-dom";
 
 // Authenication
-import { Amplify } from 'aws-amplify';
+import { Auth } from 'aws-amplify';
 
-export default function ProfileInfo(props) {
-  const [popped, setPopped] = React.useState(false);
+export default function SigninPage() {
 
-  const click_pop = (event) => {
-    setPopped(!popped)
+  const [email, setEmail] = React.useState('');
+  const [password, setPassword] = React.useState('');
+  const [errors, setErrors] = React.useState('');
+
+  const onsubmit = async (event) => {
+    setErrors('')
+    event.preventDefault();
+    Auth.signIn(email, password)
+    .then(user => {
+      console.log('user',user)
+      localStorage.setItem("access_token", user.signInUserSession.accessToken.jwtToken)
+      window.location.href = "/"
+    })
+    .catch(error => { 
+      if (error.code == 'UserNotConfirmedException') {
+        window.location.href = "/confirm"
+      }
+      setErrors(error.message)
+    });
+    return false
   }
 
-  const signOut = async () => {
-    try {
-        await Amplify.signOut({ global: true });
-        window.location.href = "/"
-    } catch (error) {
-        console.log('error signing out: ', error);
-    }
+  const email_onchange = (event) => {
+    setEmail(event.target.value);
+  }
+  const password_onchange = (event) => {
+    setPassword(event.target.value);
   }
 
-  const classes = () => {
-    let classes = ["profile-info-wrapper"];
-    if (popped == true){
-      classes.push('popped');
-    }
-    return classes.join(' ');
+  let el_errors;
+  if (errors){
+    el_errors = <div className='errors'>{errors}</div>;
   }
 
   return (
-    <div className={classes()}>
-      <div className="profile-dialog">
-        <button onClick={signOut}>Sign Out</button> 
+    <article className="signin-article">
+      <div className='signin-info'>
+        <Logo className='logo' />
       </div>
-      <div className="profile-info" onClick={click_pop}>
-        <div className="profile-avatar"></div>
-        <div className="profile-desc">
-          <div className="profile-display-name">{props.user.display_name || "My Name" }</div>
-          <div className="profile-username">@{props.user.handle || "handle"}</div>
+      <div className='signin-wrapper'>
+        <form 
+          className='signin_form'
+          onSubmit={onsubmit}
+        >
+          <h2>Sign into your Cruddur account</h2>
+          <div className='fields'>
+            <div className='field text_field username'>
+              <label>Email</label>
+              <input
+                type="text"
+                value={email}
+                onChange={email_onchange} 
+              />
+            </div>
+            <div className='field text_field password'>
+              <label>Password</label>
+              <input
+                type="password"
+                value={password}
+                onChange={password_onchange} 
+              />
+            </div>
+          </div>
+          {el_errors}
+          <div className='submit'>
+            <Link to="/forgot" className="forgot-link">Forgot Password?</Link>
+            <button type='submit'>Sign In</button>
+          </div>
+
+        </form>
+        <div className="dont-have-an-account">
+          <span>
+            Don't have an account?
+          </span>
+          <Link to="/signup">Sign up!</Link>
         </div>
-        <ElipsesIcon className='icon' />
       </div>
-    </div>
-  )
+
+    </article>
+  );
 }

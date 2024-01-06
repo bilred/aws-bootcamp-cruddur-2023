@@ -1,14 +1,15 @@
 import './HomeFeedPage.css';
 import React from "react";
 
+// Authenication
+import { Auth } from 'aws-amplify';
+
 import DesktopNavigation  from '../components/DesktopNavigation';
 import DesktopSidebar     from '../components/DesktopSidebar';
 import ActivityFeed from '../components/ActivityFeed';
 import ActivityForm from '../components/ActivityForm';
 import ReplyForm from '../components/ReplyForm';
 
-// Authenication
-import { Amplify } from 'aws-amplify';
 
 export default function HomeFeedPage() {
   const [activities, setActivities] = React.useState([]);
@@ -35,9 +36,9 @@ export default function HomeFeedPage() {
     }
   };
 
-// check if we are authenicated
+  // check if we are authenicated
   const checkAuth = async () => {
-    Amplify.currentAuthenticatedUser({
+    Auth.currentAuthenticatedUser({
       // Optional, By default is false. 
       // If set to true, this call will send a 
       // request to Cognito to get the latest user data
@@ -45,7 +46,7 @@ export default function HomeFeedPage() {
     })
     .then((user) => {
       console.log('user',user);
-      return Amplify.currentAuthenticatedUser()
+      return Auth.currentAuthenticatedUser()
     }).then((cognito_user) => {
         setUser({
           display_name: cognito_user.attributes.name,
