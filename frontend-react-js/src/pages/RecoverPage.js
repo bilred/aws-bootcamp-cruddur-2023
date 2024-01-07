@@ -22,7 +22,7 @@ export default function RecoverPage() {
     .catch((err) => setErrors(err.message) );
     return false
   }
-  
+
   const onsubmit_confirm_code = async (event) => {
     event.preventDefault();
     setErrors('')
