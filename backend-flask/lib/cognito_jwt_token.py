@@ -4,6 +4,11 @@ from jose import jwk, jwt
 from jose.exceptions import JOSEError
 from jose.utils import base64url_decode
 
+# Code copie form "github Flask-AWSCognito/flask_awscognito/services/token_service.py"
+# In order to avoid to set AWS_COGNITO_USER_POOL_CLIENT_SECRET (all did cleint side with React)
+# Use case is just pass through the Access_Token to the backend
+# and verify that it is valid for the current client via COGNITO middleware
+
 class FlaskAWSCognitoError(Exception):
   pass
 
