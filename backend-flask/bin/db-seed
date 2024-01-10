@@ -1,11 +1,12 @@
 #! /usr/bin/bash
+
 CYAN='\033[1;36m'
 NO_COLOR='\033[0m'
-LABEL="db-schema-load"
+LABEL="db-seed"
 printf "${CYAN}== ${LABEL}${NO_COLOR}\n"
 
-schema_path="$(realpath .)/backend-flask/db/schema.sql"
-echo $schema_path
+seed_path="$(realpath .)/db/seed.sql"
+echo $seed_path
 
 if [ "$1" = "prod" ]; then
   echo "Running in production mode"
@@ -14,4 +15,4 @@ else
   URL=$CONNECTION_URL
 fi
 
-psql $URL cruddur < $schema_path
+psql $URL cruddur < $seed_path
