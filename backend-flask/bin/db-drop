@@ -1,5 +1,12 @@
 #! /usr/bin/bash
 echo "db-drop"
 
-NO_DB_CONNECTION_URL=$(sed 's/\/cruddur//g' <<<"$CONNECTION_URL")
+if [ "$1" = "prod" ]; then
+  echo "Running in production mode"
+  URL=$PROD_CONNECTION_URL
+else
+  URL=$CONNECTION_URL
+fi
+
+NO_DB_CONNECTION_URL=$(sed 's/\/cruddur//g' <<<"$URL")
 psql $NO_DB_CONNECTION_URL -c "DROP database cruddur;"
