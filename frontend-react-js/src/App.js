@@ -1,15 +1,16 @@
 import './App.css';
 
 import HomeFeedPage from './pages/HomeFeedPage';
+import NotificationsFeedPage from './pages/NotificationsFeedPage';
 import UserFeedPage from './pages/UserFeedPage';
 import SignupPage from './pages/SignupPage';
 import SigninPage from './pages/SigninPage';
 import RecoverPage from './pages/RecoverPage';
 import MessageGroupsPage from './pages/MessageGroupsPage';
 import MessageGroupPage from './pages/MessageGroupPage';
+import MessageGroupNewPage from './pages/MessageGroupNewPage';
 import ConfirmationPage from './pages/ConfirmationPage';
 import React from 'react';
-import process from 'process';
 import {
   createBrowserRouter,
   RouterProvider
@@ -38,6 +39,10 @@ const router = createBrowserRouter([
     element: <HomeFeedPage />
   },
   {
+    path: "/notifications",
+    element: <NotificationsFeedPage />
+  },
+  {
     path: "/@:handle",
     element: <UserFeedPage />
   },
@@ -46,7 +51,11 @@ const router = createBrowserRouter([
     element: <MessageGroupsPage />
   },
   {
-    path: "/messages/@:handle",
+    path: "/messages/new/:handle",
+    element: <MessageGroupNewPage />
+  },
+  {
+    path: "/messages/:message_group_uuid",
     element: <MessageGroupPage />
   },
   {
