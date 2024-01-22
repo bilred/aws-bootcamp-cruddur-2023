@@ -12,6 +12,7 @@ if len(sys.argv) == 2:
     attrs = {}
 
 ddb = boto3.client('dynamodb',**attrs)
+
 table_name = 'cruddur-messages'
 
 

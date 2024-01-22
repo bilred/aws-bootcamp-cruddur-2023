@@ -1,0 +1,18 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "VisualEditor0",
+            "Effect": "Allow",
+            "Action": [
+                "dynamodb:PutItem",
+                "dynamodb:DeleteItem",
+                "dynamodb:Query"
+            ],
+            "Resource": [
+                "arn:aws:dynamodb:ca-central-1:873001202713:table/cruddur-messages/index/message_group_uuid-sk-index",
+                "arn:aws:dynamodb:ca-central-1:873001202713:table/cruddur-messages"
+            ]
+        }
+    ]
+  }
