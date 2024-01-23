@@ -65,8 +65,75 @@ We need map data in Postgres with data in Dynamodb using the Cognito_user_id usi
 ![](https://user-images.githubusercontent.com/115455157/231931460-f1bee3fc-d39c-4966-875e-e2f93e6fea95.png)
 
 ## Lambda cruddur-messaging-stream
-// TODO
+Trigger the action (Delete and Create) in DynamoDB when updating the message groups via Lambda `aws/lambdas/cruddur-messaging-stream.py`
 
+required for :
+- create a VPC endpoint for dynamoDB service on your VPC
+- create a Python lambda function in your vpc
+- enable streams on the table with 'new image' attributes included
+- add your function as a trigger on the stream
+- grant the lambda IAM role permission to read the DynamoDB stream events
+
+`AWSLambdaInvocation-DynamoDB`
+
+- grant the lambda IAM role permission to update table items
+
+
+**The Function**
+```py
+import json
+import boto3
+from boto3.dynamodb.conditions import Key, Attr
+
+dynamodb = boto3.resource(
+ 'dynamodb',
+ region_name='ca-central-1',
+ endpoint_url="http://dynamodb.ca-central-1.amazonaws.com"
+)
+
+def lambda_handler(event, context):
+  print('event-data',event)
+
+  eventName = event['Records'][0]['eventName']
+  if (eventName == 'REMOVE'):
+    print("skip REMOVE event")
+    return
+  pk = event['Records'][0]['dynamodb']['Keys']['pk']['S']
+  sk = event['Records'][0]['dynamodb']['Keys']['sk']['S']
+  if pk.startswith('MSG#'):
+    group_uuid = pk.replace("MSG#","")
+    message = event['Records'][0]['dynamodb']['NewImage']['message']['S']
+    print("GRUP ===>",group_uuid,message)
+
+    table_name = 'cruddur-messages'
+    index_name = 'message-group-sk-index'
+    table = dynamodb.Table(table_name)
+    data = table.query(
+      IndexName=index_name,
+      KeyConditionExpression=Key('message_group_uuid').eq(group_uuid)
+    )
+    print("RESP ===>",data['Items'])
+
+    # recreate the message group rows with new SK value
+    for i in data['Items']:
+      delete_item = table.delete_item(Key={'pk': i['pk'], 'sk': i['sk']})
+      print("DELETE ===>",delete_item)
+
+      response = table.put_item(
+        Item={
+          'pk': i['pk'],
+          'sk': sk,
+          'message_group_uuid':i['message_group_uuid'],
+          'message':message,
+          'user_display_name': i['user_display_name'],
+          'user_handle': i['user_handle'],
+          'user_uuid': i['user_uuid']
+        }
+      )
+      print("CREATE ===>",response)
+```
+
+-------------------------------------------------------
 -------------------------------------------------------
 ## Note1: DynamoDB Bash Scripts
 ```sh
