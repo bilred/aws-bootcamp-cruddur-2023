@@ -1,5 +1,5 @@
 # Root from Doker-hub: layer debian image, scratch image  
-FROM python:3.10-slim-buster
+FROM 873001202713.dkr.ecr.ca-central-1.amazonaws.com/cruddur-python:3.10-slim-buster
 
 # Inside Container
 # Make new folder inside container
