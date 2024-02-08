@@ -159,6 +159,72 @@ aws ssm put-parameter --type "SecureString" --name "/cruddur/backend-flask/ROLLB
 aws ssm put-parameter --type "SecureString" --name "/cruddur/backend-flask/OTEL_EXPORTER_OTLP_HEADERS" --value "x-honeycomb-team=$HONEYCOMB_API_KEY"
 ```
 
+#### Create TaskRole
+
+```sh
+aws iam create-role \
+    --role-name CruddurTaskRole \
+    --assume-role-policy-document "{
+  \"Version\":\"2012-10-17\",
+  \"Statement\":[{
+    \"Action\":[\"sts:AssumeRole\"],
+    \"Effect\":\"Allow\",
+    \"Principal\":{
+      \"Service\":[\"ecs-tasks.amazonaws.com\"]
+    }
+  }]
+}"
+
+aws iam put-role-policy \
+  --policy-name SSMAccessPolicy \
+  --role-name CruddurTaskRole \
+  --policy-document "{
+  \"Version\":\"2012-10-17\",
+  \"Statement\":[{
+    \"Action\":[
+      \"ssmmessages:CreateControlChannel\",
+      \"ssmmessages:CreateDataChannel\",
+      \"ssmmessages:OpenControlChannel\",
+      \"ssmmessages:OpenDataChannel\"
+    ],
+    \"Effect\":\"Allow\",
+    \"Resource\":\"*\"
+  }]
+}
+"
+
+aws iam attach-role-policy --policy-arn arn:aws:iam::aws:policy/CloudWatchFullAccess --role-name CruddurTaskRole
+aws iam attach-role-policy --policy-arn arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess --role-name CruddurTaskRole
+```
+
+**Set Defaults Var**
+```sh
+export DEFAULT_VPC_ID=$(aws ec2 describe-vpcs \
+--filters "Name=isDefault, Values=true" \
+--query "Vpcs[0].VpcId" \
+--output text)
+echo $DEFAULT_VPC_ID
+```
+
+```sh
+export DEFAULT_SUBNET_IDS=$(aws ec2 describe-subnets  \
+ --filters Name=vpc-id,Values=$DEFAULT_VPC_ID \
+ --query 'Subnets[*].SubnetId' \
+ --output json | jq -r 'join(",")')
+echo $DEFAULT_SUBNET_IDS
+```
+
+**Create Services** in the cluster cruddur
+
+```sh
+aws ecs create-service --cli-input-json file://aws/json/service-backend-flask.json
+```
+
+```sh
+aws ecs create-service --cli-input-json file://aws/json/service-frontend-react-js.json
+```
+
+Yes, now we can create our Register Task Defintion! after all attached permission
 For Backend
 ```sh
 aws ecs register-task-definition --cli-input-json file://aws/task-definitions/backend-flask.json
@@ -170,3 +236,22 @@ aws ecs register-task-definition --cli-input-json file://aws/task-definitions/fr
 Created Role Policies for these services and created a Task Role and attached that to Policies for CloudWatch and X-RAY.
 
 
+## Debug Utility
+Connect to the container (with task id only in the cluster)
+To access form gitpod ubuntu install the Systems-Manager 
+https://docs.aws.amazon.com/systems-manager/latest/userguide/install-plugin-debian-and-ubuntu.html
+```sh
+aws ecs execute-command  \
+--region $AWS_DEFAULT_REGION \
+--cluster cruddur \
+--task e4432ccece1a45da90e6c0474baefe91 \
+--container backend-flask \
+--command "/bin/bash" \
+--interactive
+```
+
+Why we got this erreor message? (let see in the container) 
+```
+Task stopped at: 2024-02-08T22:30:54.032Z
+ResourceInitializationError: unable to pull secrets or registry auth: execution resource retrieval failed: unable to retrieve ecr registry auth: service call has been retried 1 time(s): AccessDeniedException: User: arn:aws:sts::873001202713:assumed-role/CruddurServiceExecutionRole/c83b2ce015f240a6ad668177d60c2f38 is not authorized to perform: ecr:GetAuthorizationToken on resource: * because no identity-based policy allows the ecr:GetAuthorizationToken action status code: 400, request id: 66372395-f40d-41c3-8cf2-a18a60167fab
+```
