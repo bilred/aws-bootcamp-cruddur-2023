@@ -128,3 +128,45 @@ Push Image
 docker push $ECR_FRONTEND_REACT_URL:latest
 ```
 
+## Register Task Defintions
+### Create Task and Exection Roles for Task Defintion
+Passing Senstive Data to Task Defintion
+#### Create ExecutionRole
+
+```sh
+aws iam create-role \    
+--role-name CruddurServiceExecutionPolicy  \   
+--assume-role-policy-document file://aws/policies/service-assume-role-execution-policy.json
+```
+
+```sh
+aws iam put-role-policy \
+  --policy-name CruddurServiceExecutionPolicy \
+  --role-name CruddurServiceExecutionRole \
+  --policy-document file://aws/policies/service-execution-policy.json
+"
+```
+
+### Passing Senstive Data to Task Defintion
+https://docs.aws.amazon.com/AmazonECS/latest/developerguide/specifying-sensitive-data.html
+https://docs.aws.amazon.com/AmazonECS/latest/developerguide/secrets-envvar-ssm-paramstore.html
+
+```sh
+aws ssm put-parameter --type "SecureString" --name "/cruddur/backend-flask/AWS_ACCESS_KEY_ID" --value $AWS_ACCESS_KEY_ID
+aws ssm put-parameter --type "SecureString" --name "/cruddur/backend-flask/AWS_SECRET_ACCESS_KEY" --value $AWS_SECRET_ACCESS_KEY
+aws ssm put-parameter --type "SecureString" --name "/cruddur/backend-flask/CONNECTION_URL" --value $PROD_CONNECTION_URL
+aws ssm put-parameter --type "SecureString" --name "/cruddur/backend-flask/ROLLBAR_ACCESS_TOKEN" --value $ROLLBAR_ACCESS_TOKEN
+aws ssm put-parameter --type "SecureString" --name "/cruddur/backend-flask/OTEL_EXPORTER_OTLP_HEADERS" --value "x-honeycomb-team=$HONEYCOMB_API_KEY"
+```
+
+For Backend
+```sh
+aws ecs register-task-definition --cli-input-json file://aws/task-definitions/backend-flask.json
+```
+For Frontend
+```sh
+aws ecs register-task-definition --cli-input-json file://aws/task-definitions/frontend-react-js.json
+```
+Created Role Policies for these services and created a Task Role and attached that to Policies for CloudWatch and X-RAY.
+
+
