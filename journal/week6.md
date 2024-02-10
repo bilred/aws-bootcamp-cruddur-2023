@@ -110,6 +110,7 @@ npm run build
 ```
 
 Build Image for Frontend 
+Note: when we used the load-balancer the BACKEND_URL will be our Load balancer address in my case is "http://cruddur-alb-472351043.ca-central-1.elb.amazonaws.com:4567"
 ```sh
 docker build \
 --build-arg REACT_APP_BACKEND_URL="https://4567-$GITPOD_WORKSPACE_ID.$GITPOD_WORKSPACE_CLUSTER_HOST" \
@@ -219,16 +220,6 @@ export DEFAULT_SUBNET_IDS=$(aws ec2 describe-subnets  \
 echo $DEFAULT_SUBNET_IDS
 ```
 
-**Create Services** in the cluster cruddur
-
-```sh
-aws ecs create-service --cli-input-json file://aws/json/service-backend-flask.json
-```
-
-```sh
-aws ecs create-service --cli-input-json file://aws/json/service-frontend-react-js.json
-```
-
 Yes, now we can create our Register Task Defintion! after all attached permission
 For Backend
 ```sh
@@ -240,6 +231,16 @@ aws ecs register-task-definition --cli-input-json file://aws/task-definitions/fr
 ```
 Created Role Policies for these services and created a Task Role and attached that to Policies for CloudWatch and X-RAY.
 
+After created the task definition we can create the service 
+**Create Services** in the cluster cruddur
+
+```sh
+aws ecs create-service --cli-input-json file://aws/json/service-backend-flask.json
+```
+
+```sh
+aws ecs create-service --cli-input-json file://aws/json/service-frontend-react-js.json
+```
 
 ## Debug Utility
 Connect to the container (with task id only in the cluster)
