@@ -104,6 +104,11 @@ export ECR_FRONTEND_REACT_URL="$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazo
 echo $ECR_FRONTEND_REACT_URL
 ```
 
+Creat the forlder build to use it in frontend docker image, including the nginx.conf (reverse proxy as ligthweight http server) 
+```sh
+npm run build
+```
+
 Build Image for Frontend 
 ```sh
 docker build \

@@ -6,3 +6,4 @@ node_modules
 .aws-sam
 build.toml
 tmp/*
+session-manager-plugin.deb
