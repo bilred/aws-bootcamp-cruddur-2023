@@ -111,6 +111,7 @@ npm run build
 
 Build Image for Frontend 
 Note: when we used the load-balancer the BACKEND_URL will be our Load balancer address in my case is "http://cruddur-alb-472351043.ca-central-1.elb.amazonaws.com:4567"
+And after creating our DNS we can use instead the domain "api.cruddur.com" according to our task-definition for the backend-flask
 ```sh
 docker build \
 --build-arg REACT_APP_BACKEND_URL="https://4567-$GITPOD_WORKSPACE_ID.$GITPOD_WORKSPACE_CLUSTER_HOST" \
