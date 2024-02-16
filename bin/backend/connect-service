@@ -1,0 +1,12 @@
+#!/usr/bin/bash
+CLUSTER_NAME=CrdClusterFargateCluster
+export TASK_ID=$(aws ecs list-tasks --cluster $CLUSTER_NAME --service-name backend-flask --query 'taskArns[*]' --output json | jq -r 'join(",")')
+
+aws ecs execute-command  \
+--region $AWS_DEFAULT_REGION \
+--cluster $CLUSTER_NAME \
+--task $TASK_ID \
+--container backend-flask \
+--command "/bin/bash" \
+--interactive--command "/bin/bash" \
+--interactive
