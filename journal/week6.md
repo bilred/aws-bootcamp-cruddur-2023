@@ -262,3 +262,49 @@ Why we got this erreor message? (let see in the container)
 Task stopped at: 2024-02-08T22:30:54.032Z
 ResourceInitializationError: unable to pull secrets or registry auth: execution resource retrieval failed: unable to retrieve ecr registry auth: service call has been retried 1 time(s): AccessDeniedException: User: arn:aws:sts::873001202713:assumed-role/CruddurServiceExecutionRole/c83b2ce015f240a6ad668177d60c2f38 is not authorized to perform: ecr:GetAuthorizationToken on resource: * because no identity-based policy allows the ecr:GetAuthorizationToken action status code: 400, request id: 66372395-f40d-41c3-8cf2-a18a60167fab
 ```
+
+## Change Docker Compose to explicitly use a user-defined network
+
+Edit the bottom of `docker-compose.yml` to have have a `networks:` section.
+The section will name the network that services within docker-compose will share. This will allow docker containers outside of the docker-compose file to communicated with containers inside the file.
+
+```yml
+networks:
+  cruddur-net:
+    driver: bridge
+    name: cruddur-net
+```
+
+## Using ruby generate out env dot files for docker using erb templates
+
+# Generate env variables using Ruby
+
+Docker-compose.yml can be setup to use env files for its envrionmental variables instead of passing them directly in the `Environment` section. Since we have a frontend-react-js and a backend-flask services we need to generate two env files to be used by docker-compose.yml
+
+A ruby script in /bin/backend/generate is used to generate the env file for the backend-flask env file called `/backend-flask.env`
+
+```ruby
+#!/usr/bin/env ruby
+
+require 'erb'
+
+template = File.read 'erb/backend-flask.env.erb'
+content = ERB.new(template).result(binding)
+filename = "backend-flask.env"
+File.write(filename, content)
+```
+
+A ruby script in /bin/frontend/generate is used to generate the env file for the frontend-react-js env file called `/frontend-react-js.env`
+
+```ruby
+#!/usr/bin/env ruby
+
+require 'erb'
+
+template = File.read 'erb/frontend-react-js.env.erb'
+content = ERB.new(template).result(binding)
+filename = "frontend-react-js.env"
+File.write(filename, content)
+```
+
+The ruby script uses `ERB` templates in `/erb/` to generate the env files.
