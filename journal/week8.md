@@ -16,13 +16,13 @@
 - Run the cdk bootstrap command to configure our account for CDK
 
 ```sh
-gitpod /workspace/aws-bootcamp-cruddur-2023/thumbing-serverless-cdk (main) $ cdk bootstrap "aws://632626636018/ca-central-1"
- ⏳  Bootstrapping environment aws://632626636018/ca-central-1...
+gitpod /workspace/aws-bootcamp-cruddur-2023/thumbing-serverless-cdk (main) $ cdk bootstrap "aws://873001202713/ca-central-1"
+ ⏳  Bootstrapping environment aws://873001202713/ca-central-1...
 Trusted accounts for deployment: (none)
 Trusted accounts for lookup: (none)
 Using default execution policy of 'arn:aws:iam::aws:policy/AdministratorAccess'. Pass '--cloudformation-execution-policies' to customize.
 CDKToolkit: creating CloudFormation changeset...
- ✅  Environment aws://632626636018/ca-central-1 bootstrapped.
+ ✅  Environment aws://873001202713/ca-central-1 bootstrapped.
  ```
 
  - Use `cdk deploy` to deploy the CDK stack to AWS
@@ -32,10 +32,10 @@ CDKToolkit: creating CloudFormation changeset...
  `cp .env.example .env` inside .gitpod.yml. This is because .env is ignored with our gitignore
 
  ```yml
-THUMBING_BUCKET_NAME="assets.mycruddur.net"
+THUMBING_BUCKET_NAME="br-assets.cruddur.com"
 THUMBING_FUNCTION_PATH="/workspace/aws-bootcamp-cruddur-2023/aws/lambdas/process-images/"
 THUMBING_S3_FOLDER_INPUT="avatars/original"
 THUMBING_S3_FOLDER_OUTPUT="avatars/processed"
-THUMBING_WEBHOOK_URL="api.mycruddur.net/webhooks/avatar"
+THUMBING_WEBHOOK_URL="api.cruddur.com/webhooks/avatar"
 THUMBING_TOPIC_NAME="cruddur-assets"
 ```
