@@ -19,7 +19,7 @@ tasks:
       source "$THEIA_WORKSPACE_ROOT/backend-flask/bin/rds/update-sg-rule"
   - name: flask
     command: |
-      source  "$THEIA_WORKSPACE_ROOT/bin/backend/generate-env"    
+      "$THEIA_WORKSPACE_ROOT/bin/backend/generate-env"    
       cd backend-flask
       pip install -r requirements.txt
   - name: fargate
@@ -35,9 +35,12 @@ tasks:
       cp .env.example .env
   - name: react-js
     command: |
-      source  "$THEIA_WORKSPACE_ROOT/bin/frontend/generate-env"    
+      "$THEIA_WORKSPACE_ROOT/bin/frontend/generate-env"    
       cd frontend-react-js
       npm i
+  - name: docker
+    before: |
+      "$THEIA_WORKSPACE_ROOT/bin/ecr/login"
 
 vscode:
   extensions:
