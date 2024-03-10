@@ -17,10 +17,9 @@ tasks:
     command: |
       export GITPOD_IP=$(curl ifconfig.me)
       source "$THEIA_WORKSPACE_ROOT/backend-flask/bin/rds/update-sg-rule"
-  - name: flask
-    command: |
-      "$THEIA_WORKSPACE_ROOT/bin/backend/generate-env"    
-      cd backend-flask
+  - name: backend-flask
+    before: |
+      cd "$THEIA_WORKSPACE_ROOT"/backend-flask/
       pip install -r requirements.txt
   - name: fargate
     before: |
@@ -40,7 +39,13 @@ tasks:
       npm i
   - name: docker
     before: |
-      "$THEIA_WORKSPACE_ROOT/bin/ecr/login"
+      ruby "$THEIA_WORKSPACE_ROOT/bin/frontend/generate-env"
+      ruby "$THEIA_WORKSPACE_ROOT/bin/backend/generate-env"
+      bash "$THEIA_WORKSPACE_ROOT/bin/ecr/login"
+  - name: Thumbing-Lambda
+    before: |
+      cd "$THEIA_WORKSPACE_ROOT"/aws/lambdas/process-images
+      npm i
 
 vscode:
   extensions:
